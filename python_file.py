@@ -65,41 +65,69 @@ with open('translations.csv', 'w', newline='', encoding='utf-8') as csvfile:
 	header = ['Key', 'English'] + [lang for lang in translations if lang]
 	writer.writerow(header)
 
+	all_text_file = "all_text.txt"
+
 	# Check if the directory is a .txt file
 	if directory.endswith('.txt'):
 		# Read lines from the text file
 		with open(directory, encoding='utf-8', errors='ignore') as f:
 			lines = f.readlines()
+			if not lines:
+				print("No text found in the .txt file.")
+				exit()
 			for line in lines:
 				text_match = line.strip()  # Remove leading/trailing whitespace
 				if text_match:
 					row = translate_text(text_match, translations)  # Translate and get a row
 					writer.writerow(row)  # Write the row to the CSV file
 	else:
-		all_text_file = "all_text.txt"
-		all_text = []
-		# Iterate through the directory and find the text in scene files
-		for root, dirs, files in os.walk(directory):
-			for file in files:
-				if file.endswith('.gd') or file.endswith('.tscn'):
-					file_path = os.path.join(root, file)
-					with open(file_path, encoding='utf-8', errors='ignore') as f:
-						content = f.read()
-						text_matches = text_pattern.findall(content)  # Find all text matches
-						for text_match in text_matches:
-							all_text.append(text_match)  # Add matches to the list
+		# Check if all_text.txt exists in the directory
+		all_text_path = os.path.join(directory, all_text_file)
+		if os.path.isfile(all_text_path):
+			print("Found existing text file, skipping project iteration.")
+			with open(all_text_path, encoding='utf-8', errors='ignore') as f:
+				lines = f.readlines()
+				if not lines:
+					print("No text found in the .txt file.")
+					exit()
+				for line in lines:
+					text_match = line.strip()
+					if text_match:
+						row = translate_text(text_match, translations)
+						writer.writerow(row)
+		else:
+			# Iterate through the directory and find the text in scene files
+			any_scene_files = False
+			all_text = []  # Initialize the list of all text found
+			for root, dirs, files in os.walk(directory):
+				for file in files:
+					if file.endswith('.gd') or file.endswith('.tscn'):
+						any_scene_files = True
+						file_path = os.path.join(root, file)
+						with open(file_path, encoding='utf-8', errors='ignore') as f:
+							content = f.read()
+							text_matches = text_pattern.findall(content)  # Find all text matches
+							for text_match in text_matches:
+								all_text.append(text_match)  # Add matches to the list
 
-		# Write all found text to a combined file
-		with open(all_text_file, 'w', encoding='utf-8') as f:
-			for line in all_text:
-				f.write(line + "\n")
+			if not any_scene_files:
+				print("No .gd or .tscn files were found in the directory. Please check the directory path.")
+				exit()
 
-		# Read lines from the combined text file and translate
-		with open(all_text_file, encoding='utf-8', errors='ignore') as f:
-			lines = f.readlines()
-			for line in lines:
-				text_match = line.strip()
-				if text_match:
-					row = translate_text(text_match, translations)
-					writer.writerow(row)
+			# Write all found text to a combined file
+			with open(all_text_file, 'w', encoding='utf-8') as f:
+				if not all_text:
+					print("No text found in the project files.")
+					exit()
+				for line in all_text:
+					f.write(line + "\n")
+
+			# Read lines from the combined text file and translate
+			with open(all_text_file, encoding='utf-8', errors='ignore') as f:
+				lines = f.readlines()
+				for line in lines:
+					text_match = line.strip()
+					if text_match:
+						row = translate_text(text_match, translations)
+						writer.writerow(row)
 
