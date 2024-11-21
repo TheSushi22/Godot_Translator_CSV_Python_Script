@@ -1,6 +1,23 @@
 # Godot_Translator_CSV_Python_Script
 A python script that goes through your godot project folder, pulls all the text, translates them into your desired language, and saves them as a csv file
 
+# How It Works
+The code works in three steps:
+
+Step one, looks through a project file and pulls all text from .gd or .tscn files and puts them into a txt file.
+This txt file can be used to speed up the process later if you need to skip the scanning process.
+Either drop your txt file into the project folder or change the directory to point directly to it.
+
+Step Two, translate the text files to desired language.
+The txt file is now translated line by line.
+The more languages you want to use, the longer this will take.
+Keep in mind, if there is an error with translating, or the text can't be translated, it will still be added to the csv file but won't be translated.
+
+Step Three, you csv file is now created.
+This is a template for creating a csv file on your own.
+You will still need to edit your project in order to handle a csv file.
+You can follow the official Godot guide [HERE](https://docs.godotengine.org/en/stable/tutorials/i18n/internationalizing_games.html#)
+
 # Requirements
 ```
 pip install deep-translator
